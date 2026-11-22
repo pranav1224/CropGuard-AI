@@ -4,25 +4,54 @@ Features 3D WebGL Topography, 3D Elevation Meshes, 3D Yield Response Surfaces,
 and 3D Glassmorphism Frontend.
 """
 
+import sys
 import os
+from pathlib import Path
+
+# Ensure project root & engine directories are in Python path (critical for Streamlit Cloud deployment)
+ROOT_DIR = Path(__file__).resolve().parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+ENGINE_DIR = ROOT_DIR / "engine"
+if str(ENGINE_DIR) not in sys.path:
+    sys.path.insert(0, str(ENGINE_DIR))
+
 import io
 import json
+import cv2
 import numpy as np
 import pandas as pd
 from PIL import Image
 import streamlit as st
 import streamlit.components.v1 as components
 
-from engine.vision_classifier import CropVisionClassifier
-from engine.disease_db import DISEASE_DATABASE, get_disease_info, list_supported_crops
-from engine.yield_predictor import CropYieldPredictor, CROP_YIELD_BASELINES
-from engine.growth_booster import get_growth_protocol
-from engine.pdf_report import generate_cropguard_pdf
-from engine.visualizer_3d import (
-    generate_3d_leaf_surface_plot,
-    generate_3d_yield_surface_plot,
-    get_webgl_leaf_3d_html
-)
+try:
+    from engine.vision_classifier import CropVisionClassifier
+    from engine.disease_db import DISEASE_DATABASE, get_disease_info, list_supported_crops
+    from engine.yield_predictor import CropYieldPredictor, CROP_YIELD_BASELINES
+    from engine.growth_booster import get_growth_protocol
+    from engine.pdf_report import generate_cropguard_pdf
+    from engine.visualizer_3d import (
+        generate_3d_leaf_surface_plot,
+        generate_3d_yield_surface_plot,
+        get_webgl_leaf_3d_html
+    )
+except ModuleNotFoundError:
+    try:
+        from vision_classifier import CropVisionClassifier
+        from disease_db import DISEASE_DATABASE, get_disease_info, list_supported_crops
+        from yield_predictor import CropYieldPredictor, CROP_YIELD_BASELINES
+        from growth_booster import get_growth_protocol
+        from pdf_report import generate_cropguard_pdf
+        from visualizer_3d import (
+            generate_3d_leaf_surface_plot,
+            generate_3d_yield_surface_plot,
+            get_webgl_leaf_3d_html
+        )
+    except Exception as inner_err:
+        st.error(f"⚠️ CropGuard Engine Loading Error: {inner_err}")
+        st.info("Please ensure the 'engine/' directory was uploaded to your GitHub repository alongside app.py.")
+        st.stop()
 
 # Page Configuration
 st.set_page_config(
@@ -291,7 +320,24 @@ st.markdown("""
 
 # Sidebar
 with st.sidebar:
-    st.image("https://images.unsplash.com/photo-1592417817098-8f3d6eb22509?auto=format&fit=crop&w=600&q=80", caption="CropGuard Precision Agro-Tech", use_container_width=True)
+    banner_path = os.path.join(ROOT_DIR, "assets", "cropguard_banner.png")
+    if os.path.exists(banner_path):
+        st.image(banner_path, use_container_width=True)
+    else:
+        sample_fallback = os.path.join(ROOT_DIR, "samples", "healthy_tomato.jpg")
+        st.image(sample_fallback if os.path.exists(sample_fallback) else "https://images.unsplash.com/photo-1592417817098-8f3d6eb22509?auto=format&fit=crop&w=600&q=80", caption="CropGuard Precision Agro-Tech", use_container_width=True)
+
+    # Home & Dashboard Navigation Buttons
+    nav_btn_col1, nav_btn_col2 = st.columns(2)
+    with nav_btn_col1:
+        if st.button("🏠 Home Reset", use_container_width=True, help="Reset session and return to fresh home state"):
+            st.session_state.last_diagnosis = None
+            st.session_state.selected_sample = None
+            st.rerun()
+    with nav_btn_col2:
+        st.link_button("🌐 Return Home", "http://localhost:5000", use_container_width=True, help="Go back to the Full-Stack Web Dashboard (Port 5000)")
+
+    st.markdown("---")
     st.markdown("### 🚜 Farm & Target Crop")
 
     crop_options = ["Auto-Detect (All Crops)"] + list(CROP_YIELD_BASELINES.keys())
@@ -459,17 +505,23 @@ with tab_detect:
 
         # Extract masks for 3D viewers
         rgb_arr = vis["original_rgb"]
-        bgr = cv2.cvtColor(rgb_arr, cv2.COLOR_RGB2BGR)
-        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-        lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
-        l_channel = lab[:, :, 0]
+        try:
+            bgr = cv2.cvtColor(rgb_arr, cv2.COLOR_RGB2BGR)
+            hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+            lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+            l_channel = lab[:, :, 0]
 
-        lower_leaf = np.array([15, 25, 25])
-        upper_leaf = np.array([100, 255, 255])
-        leaf_mask = cv2.inRange(hsv, lower_leaf, upper_leaf)
-        necrosis_mask = cv2.bitwise_and(leaf_mask, cv2.inRange(l_channel, 0, 85))
-        rust_mask = cv2.bitwise_and(leaf_mask, cv2.inRange(hsv, np.array([5, 110, 80]), np.array([18, 255, 255])))
-        disease_mask = cv2.bitwise_or(necrosis_mask, rust_mask)
+            lower_leaf = np.array([15, 25, 25])
+            upper_leaf = np.array([100, 255, 255])
+            leaf_mask = cv2.inRange(hsv, lower_leaf, upper_leaf)
+            necrosis_mask = cv2.bitwise_and(leaf_mask, cv2.inRange(l_channel, 0, 85))
+            rust_mask = cv2.bitwise_and(leaf_mask, cv2.inRange(hsv, np.array([5, 110, 80]), np.array([18, 255, 255])))
+            disease_mask = cv2.bitwise_or(necrosis_mask, rust_mask)
+        except Exception:
+            h, w = rgb_arr.shape[:2]
+            disease_mask = np.zeros((h, w), dtype=np.uint8)
+            necrosis_mask = np.zeros((h, w), dtype=np.uint8)
+            rust_mask = np.zeros((h, w), dtype=np.uint8)
 
         if "Interactive 3D WebGL" in view_mode:
             st.markdown("""
