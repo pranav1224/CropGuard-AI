@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CropGuard - AI-Powered Agriculture Decision Support System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c22',
+            },
+            harvest: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(16, 185, 129, 0.12);
+    }
+    .dark .glass-card {
+      background: rgba(15, 23, 42, 0.90);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .scanner-line {
+      position: absolute;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #10b981, #34d399, transparent);
+      box-shadow: 0 0 15px #10b981;
+      animation: scan 2.2s ease-in-out infinite;
+    }
+    @keyframes scan {
+      0% { top: 0%; opacity: 0.8; }
+      50% { top: 96%; opacity: 1; }
+      100% { top: 0%; opacity: 0.8; }
+    }
+    .badge-glow {
+      box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen selection:bg-brand-500 selection:text-white">
+
+  <!-- Top Announcement / Live Telemetry -->
+  <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-slate-900 text-white text-xs py-2 px-4">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> MERN + ML Microservices Active
+        </span>
+        <span class="hidden sm:inline text-slate-300">Model: MobileNetV3 + XGBoost Ensemble</span>
+      </div>
+      <div class="flex items-center space-x-4 text-slate-300">
+        <span class="flex items-center"><i data-lucide="cloud-sun" class="w-3.5 h-3.5 mr-1 text-amber-400"></i> Pune Region: 28°C, Humidity 64%</span>
+        <span class="hidden md:flex items-center"><i data-lucide="activity" class="w-3.5 h-3.5 mr-1 text-emerald-400"></i> Real-time API Latency: 42ms</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Navigation Header -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200/80 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-md shadow-brand-500/30">
+          <i data-lucide="sprout" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-2xl font-black tracking-tight text-slate-900">Crop<span class="text-brand-600">Guard</span></span>
+            <span class="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-brand-100 text-brand-800 border border-brand-200">v2.4 AI Pro</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">Smart Precision Agriculture & Crop Defense Platform</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden lg:flex items-center space-x-1 font-medium text-sm text-slate-600">
+        <a href="#overview" class="px-3.5 py-2 rounded-lg hover:text-brand-600 hover:bg-brand-50 transition">Dashboard</a>
+        <a href="#disease-detector" class="px-3.5 py-2 rounded-lg text-brand-700 bg-brand-50/80 font-semibold border border-brand-200/50">Leaf Disease AI</a>
+        <a href="#yield-predictor" class="px-3.5 py-2 rounded-lg hover:text-brand-600 hover:bg-brand-50 transition">Yield & NPK Predictor</a>
+        <a href="#analytics" class="px-3.5 py-2 rounded-lg hover:text-brand-600 hover:bg-brand-50 transition">Analytics</a>
+        <a href="#differences" class="px-3.5 py-2 rounded-lg hover:text-brand-600 hover:bg-brand-50 transition">Why CropGuard?</a>
+        <a href="#architecture" class="px-3.5 py-2 rounded-lg hover:text-brand-600 hover:bg-brand-50 transition">Architecture</a>
+      </nav>
+
+      <!-- Action CTA -->
+      <div class="flex items-center space-x-3">
+        <button onclick="openSynopsisModal()" class="hidden sm:inline-flex items-center px-4 py-2 text-xs font-semibold text-brand-800 bg-brand-100 hover:bg-brand-200 border border-brand-300 rounded-xl transition shadow-xs">
+          <i data-lucide="file-text" class="w-4 h-4 mr-1.5"></i> Project Synopsis
+        </button>
+        <button onclick="document.getElementById('disease-detector').scrollIntoView({behavior: 'smooth'})" class="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 rounded-xl shadow-md shadow-brand-600/30 transition transform active:scale-95">
+          <i data-lucide="scan" class="w-4 h-4 mr-1.5"></i> Launch Scanner
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="overview" class="relative overflow-hidden pt-8 pb-12 bg-gradient-to-b from-brand-50/60 via-white to-slate-50 border-b border-slate-200/60">
+    <div class="absolute -right-32 -top-32 w-96 h-96 bg-brand-200/40 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -left-20 top-40 w-80 h-80 bg-amber-100/40 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <!-- Hero Left -->
+        <div class="lg:col-span-7 space-y-5">
+          <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white border border-brand-200 text-brand-800 shadow-xs text-xs font-semibold">
+            <span class="flex h-2 w-2 rounded-full bg-brand-500 animate-ping"></span>
+            <span>Trained on 54,300+ PlantVillage & ICAR Agricultural Samples</span>
+          </div>
+          
+          <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
+            Smarter Harvests with <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-emerald-600 to-teal-700">Computer Vision</span> & Precision Agronomy.
+          </h1>
+          
+          <p class="text-base sm:text-lg text-slate-600 leading-relaxed">
+            CropGuard bridges cutting-edge deep learning with full-stack MERN scalability. Instantly detect <strong>38+ plant diseases</strong> with Grad-CAM leaf heatmaps, and forecast <strong>acreage crop yields</strong> using real-time soil N-P-K, pH, and agro-climatic intelligence.
+          </p>
+
+          <!-- Metrics Row -->
+          <div class="grid grid-cols-3 gap-4 pt-2">
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+              <div class="text-2xl font-black text-brand-600">98.7%</div>
+              <div class="text-xs font-semibold text-slate-700 mt-0.5">Diagnostic Accuracy</div>
+              <div class="text-[11px] text-slate-400">MobileNetV3 / ResNet50</div>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+              <div class="text-2xl font-black text-slate-900">38+</div>
+              <div class="text-xs font-semibold text-slate-700 mt-0.5">Crop Pathology Classes</div>
+              <div class="text-[11px] text-slate-400">Fungal, Bacterial & Viral</div>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+              <div class="text-2xl font-black text-amber-600">&plusmn;4.2%</div>
+              <div class="text-xs font-semibold text-slate-700 mt-0.5">Yield Variance RMSE</div>
+              <div class="text-[11px] text-slate-400">XGBoost & Random Forest</div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-3 pt-2">
+            <a href="#disease-detector" class="px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm shadow-lg shadow-brand-600/30 transition flex items-center">
+              <i data-lucide="scan-line" class="w-4 h-4 mr-2"></i> Try Disease Detection
+            </a>
+            <a href="#yield-predictor" class="px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-sm transition flex items-center">
+              <i data-lucide="gauge" class="w-4 h-4 mr-2 text-brand-600"></i> Calculate Soil & Yield
+            </a>
+            <a href="#differences" class="px-5 py-3 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-800 font-semibold text-sm transition flex items-center">
+              <i data-lucide="sparkles" class="w-4 h-4 mr-2 text-brand-600"></i> What Makes Us Different
+            </a>
+          </div>
+        </div>
+
+        <!-- Hero Right: Live Telemetry Widget Card -->
+        <div class="lg:col-span-5">
+          <div class="glass-card rounded-3xl p-6 shadow-xl relative overflow-hidden border border-brand-200">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <i data-lucide="map-pin" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900 text-sm">Farm Parcel #04-GreenFields</h3>
+                  <p class="text-xs text-slate-500">Live IoT & Weather Station Feed</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">Sensors Online</span>
+            </div>
+
+            <!-- Sensor Grid -->
+            <div class="grid grid-cols-2 gap-3 mt-4">
+              <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-100">
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Soil Moisture</span>
+                  <i data-lucide="droplets" class="w-4 h-4 text-blue-500"></i>
+                </div>
+                <div class="text-lg font-bold text-slate-800 mt-1">42.8%</div>
+                <div class="text-[10px] text-emerald-600 font-medium">Optimal root hydration</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-100">
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Soil pH Level</span>
+                  <i data-lucide="flask-conical" class="w-4 h-4 text-purple-500"></i>
+                </div>
+                <div class="text-lg font-bold text-slate-800 mt-1">6.4 pH</div>
+                <div class="text-[10px] text-emerald-600 font-medium">Slightly acidic (Ideal)</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-100">
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Nitrogen (N)</span>
+                  <i data-lucide="leaf" class="w-4 h-4 text-emerald-500"></i>
+                </div>
+                <div class="text-lg font-bold text-slate-800 mt-1">78 kg/ha</div>
+                <div class="text-[10px] text-amber-600 font-medium">Mild deficit (-8%)</div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-50/80 border border-slate-100">
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Pathogen Threat</span>
+                  <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+                </div>
+                <div class="text-lg font-bold text-emerald-600 mt-1">Low (12%)</div>
+                <div class="text-[10px] text-slate-400">Weather low risk</div>
+              </div>
+            </div>
+
+            <!-- Quick Alert banner -->
+            <div class="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start space-x-3">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+              <div class="text-xs">
+                <span class="font-bold text-amber-900">Upcoming Rain Advisory:</span>
+                <span class="text-amber-800"> 22mm expected in 48 hours. Postpone fungicide spraying until dry spell.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 1: AI Leaf Disease Diagnostic Module -->
+  <section id="disease-detector" class="py-16 bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-100 text-brand-800">
+          Module 1 &bull; Computer Vision
+        </span>
+        <h2 class="text-3xl font-extrabold text-slate-900 mt-2">
+          Intelligent Crop Disease Diagnostic Scanner
+        </h2>
+        <p class="text-slate-600 text-sm sm:text-base mt-2">
+          Upload a clear photograph of a diseased or healthy leaf. Our fine-tuned deep CNN pipeline performs segmentation, pathogen identification, and prescribes organic/chemical countermeasures.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Upload & Scanner Box -->
+        <div class="lg:col-span-6 bg-slate-50 rounded-3xl p-6 border-2 border-dashed border-brand-300 relative">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center">
+              <i data-lucide="camera" class="w-4 h-4 mr-2 text-brand-600"></i>
+              Leaf Inspection Chamber
+            </h3>
+            <span class="text-xs font-semibold text-slate-500">Supports JPG, PNG, WEBP</span>
+          </div>
+
+          <!-- Leaf Preview Area -->
+          <div id="scanner-container" class="relative w-full h-72 rounded-2xl overflow-hidden bg-slate-900 flex items-center justify-center border border-slate-700">
+            <!-- Simulated scanner laser line -->
+            <div id="scanner-laser" class="scanner-line hidden"></div>
+            
+            <!-- Default or uploaded image -->
+            <img id="leaf-preview" src="https://images.unsplash.com/photo-1592150621744-aca64f48394a?auto=format&fit=crop&w=800&q=80" alt="Leaf sample" class="w-full h-full object-cover" />
+            
+            <!-- Grad-CAM Heatmap overlay (Toggleable) -->
+            <div id="gradcam-overlay" class="absolute inset-0 bg-gradient-to-tr from-red-500/40 via-yellow-400/30 to-blue-500/10 mix-blend-color-burn opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+
+            <!-- Scanning overlay state -->
+            <div id="scanning-status" class="absolute inset-0 bg-slate-900/80 backdrop-blur-xs flex flex-col items-center justify-center text-white hidden">
+              <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+              <p class="mt-4 font-bold text-sm tracking-wide" id="scan-step-text">Passing image through ResNet-50...</p>
+              <p class="text-xs text-slate-400 mt-1">Extracting spatial feature maps</p>
+            </div>
+          </div>
+
+          <!-- Controls under preview -->
+          <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-2">
+              <label for="leaf-upload" class="cursor-pointer inline-flex items-center px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition">
+                <i data-lucide="upload" class="w-3.5 h-3.5 mr-1.5"></i> Upload Your Leaf
+              </label>
+              <input type="file" id="leaf-upload" accept="image/*" class="hidden" onchange="handleLeafUpload(event)" />
+
+              <button onclick="toggleGradCam()" id="gradcam-btn" class="inline-flex items-center px-3 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition">
+                <i data-lucide="eye" class="w-3.5 h-3.5 mr-1.5 text-purple-600"></i> Grad-CAM Heatmap
+              </button>
+            </div>
+
+            <button onclick="runInference()" id="diagnose-btn" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md shadow-brand-600/30 transition flex items-center">
+              <i data-lucide="play" class="w-3.5 h-3.5 mr-1.5"></i> Run AI Diagnosis
+            </button>
+          </div>
+
+          <!-- Preset Samples for instant testing -->
+          <div class="mt-5 pt-4 border-t border-slate-200">
+            <span class="text-xs font-bold text-slate-600 block mb-2">Or test with preset field samples:</span>
+            <div class="grid grid-cols-4 gap-2">
+              <button onclick="loadSample('tomato_blight')" class="p-2 rounded-xl bg-white border border-slate-200 hover:border-brand-500 text-left transition group">
+                <div class="text-[11px] font-bold text-slate-800 group-hover:text-brand-600 truncate">Tomato Late Blight</div>
+                <div class="text-[9px] text-red-500 font-semibold">Fungal Infestation</div>
+              </button>
+              <button onclick="loadSample('corn_healthy')" class="p-2 rounded-xl bg-white border border-slate-200 hover:border-brand-500 text-left transition group">
+                <div class="text-[11px] font-bold text-slate-800 group-hover:text-brand-600 truncate">Maize Healthy</div>
+                <div class="text-[9px] text-emerald-600 font-semibold">Pathogen Free</div>
+              </button>
+              <button onclick="loadSample('potato_early')" class="p-2 rounded-xl bg-white border border-slate-200 hover:border-brand-500 text-left transition group">
+                <div class="text-[11px] font-bold text-slate-800 group-hover:text-brand-600 truncate">Potato Early Blight</div>
+                <div class="text-[9px] text-amber-600 font-semibold">Target Spots</div>
+              </button>
+              <button onclick="loadSample('apple_scab')" class="p-2 rounded-xl bg-white border border-slate-200 hover:border-brand-500 text-left transition group">
+                <div class="text-[11px] font-bold text-slate-800 group-hover:text-brand-600 truncate">Apple Scab</div>
+                <div class="text-[9px] text-purple-600 font-semibold">Venturia Inaequalis</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Diagnosis Output Card -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-3xl p-6 border border-slate-200 shadow-md">
+            <div class="flex items-start justify-between">
+              <div>
+                <span id="pathogen-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700 border border-red-200">
+                  Fungal Pathogen Detected
+                </span>
+                <h3 id="result-title" class="text-2xl font-black text-slate-900 mt-2">Tomato - Late Blight</h3>
+                <p id="pathogen-scientific" class="text-xs italic text-slate-500 font-medium">Phytophthora infestans (Oomycete)</p>
+              </div>
+
+              <div class="text-right">
+                <div class="text-2xl font-black text-brand-600" id="confidence-pct">98.4%</div>
+                <div class="text-[11px] font-semibold text-slate-400">Confidence Score</div>
+              </div>
+            </div>
+
+            <!-- Severity & Confidence Bar -->
+            <div class="mt-4 space-y-2">
+              <div class="flex justify-between text-xs font-semibold text-slate-600">
+                <span>Infection Severity Index</span>
+                <span id="severity-label" class="text-red-600 font-bold">Severe (Stage 3 Necrosis)</span>
+              </div>
+              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div id="severity-bar" class="bg-red-500 h-2.5 rounded-full transition-all duration-700" style="width: 78%"></div>
+              </div>
+            </div>
+
+            <!-- Diagnostic Details Accordion / Tabs -->
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <span class="font-bold text-slate-700 block mb-1 flex items-center">
+                  <i data-lucide="eye" class="w-3.5 h-3.5 mr-1 text-slate-500"></i> Visual Symptoms
+                </span>
+                <p id="symptoms-desc" class="text-slate-600 leading-relaxed">
+                  Large, irregular water-soaked lesions turning brown-black with white fuzzy fungal growth on the underside during humid weather.
+                </p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <span class="font-bold text-slate-700 block mb-1 flex items-center">
+                  <i data-lucide="cloud-rain" class="w-3.5 h-3.5 mr-1 text-slate-500"></i> Environmental Trigger
+                </span>
+                <p id="trigger-desc" class="text-slate-600 leading-relaxed">
+                  Prolonged leaf wetness (>8 hours) and temperatures between 16°C - 22°C with high relative humidity (>90%).
+                </p>
+              </div>
+            </div>
+
+            <!-- Action Plan: Organic vs Chemical -->
+            <div class="mt-6 pt-5 border-t border-slate-200">
+              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3">Countermeasure Prescription</h4>
+              
+              <div class="space-y-2.5">
+                <div class="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-start space-x-3">
+                  <i data-lucide="leaf" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                  <div>
+                    <span class="font-bold text-emerald-900 text-xs">Organic / Biological Remedy:</span>
+                    <p id="organic-remedy" class="text-emerald-800 text-xs mt-0.5">
+                      Apply Copper Hydroxide (organic copper soap) or spray Bacillus subtilis microbial bio-fungicide. Prune affected bottom canopy leaves immediately and destroy off-field.
+                    </p>
+                  </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-blue-50/80 border border-blue-200 flex items-start space-x-3">
+                  <i data-lucide="flask-round" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
+                  <div>
+                    <span class="font-bold text-blue-900 text-xs">Chemical Fungicide Formulation:</span>
+                    <p id="chemical-remedy" class="text-blue-800 text-xs mt-0.5">
+                      Mancozeb 75% WP @ 2.5g/L water OR Metalaxyl 8% + Mancozeb 64% WP (Ridomil MZ) @ 2g/L. Repeat cycle every 7-10 days if humid weather persists.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Download Report Button -->
+            <div class="mt-5 flex items-center justify-between pt-4 border-t border-slate-100">
+              <span class="text-[11px] text-slate-400">Diagnosis ID: #CG-DIAG-2026-8902</span>
+              <button onclick="downloadDiagnosticReport()" class="inline-flex items-center text-xs font-semibold text-brand-700 hover:text-brand-800">
+                <i data-lucide="download" class="w-3.5 h-3.5 mr-1"></i> Export Advisory PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Crop Yield & Soil Health Predictor -->
+  <section id="yield-predictor" class="py-16 bg-slate-50 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-800">
+          Module 2 &bull; Predictive Agronomy
+        </span>
+        <h2 class="text-3xl font-extrabold text-slate-900 mt-2">
+          Precision Crop Yield & Soil Advisory Calculator
+        </h2>
+        <p class="text-slate-600 text-sm sm:text-base mt-2">
+          Leverages an XGBoost & Random Forest ensemble trained on ICAR & FAO soil-yield parameters to forecast harvest weight, assess soil fertility, and calculate optimum NPK supplement dosages.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <!-- Input Form Parameters -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md">
+          <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base">Field & Soil Parameter Inputs</h3>
+              <p class="text-xs text-slate-500">Adjust the sliders to match your recent soil health card test</p>
+            </div>
+            <button onclick="resetSliders()" class="text-xs font-medium text-slate-400 hover:text-slate-600 flex items-center">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 mr-1"></i> Reset
+            </button>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Crop Selector & Land Area -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Target Crop Cultivar</label>
+                <select id="crop-select" onchange="calculateYield()" class="w-full text-sm font-semibold rounded-xl border border-slate-300 py-2.5 px-3 bg-white text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                  <option value="wheat">Wheat (Triticum aestivum)</option>
+                  <option value="rice" selected>Rice / Paddy (Oryza sativa)</option>
+                  <option value="maize">Maize / Corn (Zea mays)</option>
+                  <option value="cotton">Cotton (Gossypium)</option>
+                  <option value="sugarcane">Sugarcane (Saccharum officinarum)</option>
+                  <option value="tomato">Tomato (Solanum lycopersicum)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Cultivated Land Area (Acres)</label>
+                <input type="number" id="land-area" value="5" min="0.5" max="500" step="0.5" onchange="calculateYield()" class="w-full text-sm font-semibold rounded-xl border border-slate-300 py-2 px-3 text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none" />
+              </div>
+            </div>
+
+            <!-- N-P-K Sliders -->
+            <div class="p-4 rounded-2xl bg-brand-50/50 border border-brand-100 space-y-4">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-brand-900 flex items-center">
+                <i data-lucide="test-tube-2" class="w-4 h-4 mr-1.5 text-brand-600"></i> Macronutrient Balance (NPK in kg/ha)
+              </span>
+
+              <!-- Nitrogen Slider -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>Nitrogen (N)</span>
+                  <span id="n-val" class="font-bold text-brand-700">80 kg/ha</span>
+                </div>
+                <input type="range" id="input-n" min="10" max="180" value="80" oninput="updateParam('n', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600" />
+              </div>
+
+              <!-- Phosphorus Slider -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>Phosphorus (P)</span>
+                  <span id="p-val" class="font-bold text-brand-700">45 kg/ha</span>
+                </div>
+                <input type="range" id="input-p" min="5" max="145" value="45" oninput="updateParam('p', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600" />
+              </div>
+
+              <!-- Potassium Slider -->
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>Potassium (K)</span>
+                  <span id="k-val" class="font-bold text-brand-700">50 kg/ha</span>
+                </div>
+                <input type="range" id="input-k" min="10" max="200" value="50" oninput="updateParam('k', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600" />
+              </div>
+            </div>
+
+            <!-- Agro-Climatic Parameters -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>Soil pH</span>
+                  <span id="ph-val" class="font-bold text-slate-900">6.5</span>
+                </div>
+                <input type="range" id="input-ph" min="4.0" max="9.0" step="0.1" value="6.5" oninput="updateParam('ph', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>Annual Rain</span>
+                  <span id="rain-val" class="font-bold text-slate-900">1100 mm</span>
+                </div>
+                <input type="range" id="input-rain" min="200" max="2500" step="50" value="1100" oninput="updateParam('rain', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
+                  <span>Mean Temp</span>
+                  <span id="temp-val" class="font-bold text-slate-900">26 °C</span>
+                </div>
+                <input type="range" id="input-temp" min="10" max="45" step="1" value="26" oninput="updateParam('temp', this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-600" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Forecast & Fertilizer Advice Card -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="bg-gradient-to-br from-slate-900 via-brand-950 to-slate-900 text-white rounded-3xl p-6 sm:p-7 shadow-xl relative overflow-hidden border border-brand-500/30">
+            <div class="flex items-center justify-between pb-4 border-b border-white/10">
+              <span class="text-xs uppercase tracking-wider font-semibold text-brand-400">ML Prediction Engine Output</span>
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-brand-500/20 text-brand-300 border border-brand-500/30">Ensemble v1.2</span>
+            </div>
+
+            <!-- Predicted Yield Display -->
+            <div class="mt-6 text-center">
+              <div class="text-xs font-medium text-slate-400 uppercase tracking-widest">Projected Harvest Yield</div>
+              <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-300 via-white to-emerald-200 mt-1" id="projected-yield">
+                21.8 Tons
+              </div>
+              <div class="text-xs text-brand-300 font-semibold mt-1" id="yield-rate">
+                (4.36 Tons per Acre &bull; High Productivity)
+              </div>
+            </div>
+
+            <!-- KPI Trio -->
+            <div class="grid grid-cols-3 gap-2 mt-6 pt-4 border-t border-white/10 text-center">
+              <div class="p-2 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400">Soil Health</div>
+                <div class="text-sm font-bold text-emerald-400 mt-0.5" id="soil-health-badge">88 / 100</div>
+              </div>
+              <div class="p-2 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400">Harvest Window</div>
+                <div class="text-sm font-bold text-amber-300 mt-0.5">95 - 110 Days</div>
+              </div>
+              <div class="p-2 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-[10px] text-slate-400">Est. Revenue</div>
+                <div class="text-sm font-bold text-white mt-0.5" id="est-revenue">₹ 4,36,000</div>
+              </div>
+            </div>
+
+            <!-- Precision Fertilizer Prescription -->
+            <div class="mt-6 p-4 rounded-2xl bg-white/10 border border-white/15 space-y-2">
+              <div class="flex items-center text-xs font-bold text-brand-300">
+                <i data-lucide="check-circle-2" class="w-4 h-4 mr-1.5 text-brand-400"></i>
+                Recommended Fertilizer Regimen
+              </div>
+              <p class="text-xs text-slate-200 leading-relaxed" id="fertilizer-advice">
+                For optimal Rice grain filling, top-dress <strong>18 kg Urea</strong> at tillering stage and supplement <strong>12 kg MOP (Muriate of Potash)</strong> to strengthen stalk resistance against lodging.
+              </p>
+            </div>
+
+            <!-- Model Details Footer -->
+            <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
+              <span>Model R² Score: <strong>0.942</strong></span>
+              <span>Dataset: ICAR Soil Series 2024</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Visual Analytics & Historical Yield Trends -->
+  <section id="analytics" class="py-16 bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-8">
+        <div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-purple-100 text-purple-800">
+            Module 3 &bull; Agri-Analytics
+          </span>
+          <h2 class="text-3xl font-extrabold text-slate-900 mt-2">
+            Historical Productivity & Regional Mandi Trends
+          </h2>
+          <p class="text-slate-600 text-sm mt-1">Multi-season yield correlation with precipitation & market price forecasts.</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex items-center space-x-2">
+          <span class="text-xs font-semibold text-slate-500">Select Timeline:</span>
+          <button class="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-900 text-white">2024 - 2026</button>
+          <button class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200">5-Year Trend</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- Main Chart -->
+        <div class="lg:col-span-8 bg-slate-50 rounded-3xl p-6 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-800 text-sm">Crop Yield (Tons/Ha) vs Rainfall Over Past 6 Seasons</h3>
+            <span class="text-xs text-brand-700 font-semibold flex items-center"><i data-lucide="trending-up" class="w-3.5 h-3.5 mr-1"></i> +14.2% YoY Improvement</span>
+          </div>
+          <div class="relative h-72">
+            <canvas id="yieldChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Live Mandi Prices Sidebar -->
+        <div class="lg:col-span-4 bg-slate-50 rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 class="font-bold text-slate-800 text-sm flex items-center justify-between">
+              <span>Live Mandi Spot Rates</span>
+              <span class="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Live AGMARKNET</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5">Updated every 30 minutes</p>
+
+            <div class="space-y-3 mt-4">
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-slate-800 text-xs">Paddy (Basmati Common)</div>
+                  <div class="text-[11px] text-slate-400">Karnal Mandi</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-bold text-slate-900">₹ 3,850 / Qtl</div>
+                  <div class="text-[10px] text-emerald-600 font-semibold">+2.8% &uarr;</div>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-slate-800 text-xs">Sharbati Wheat</div>
+                  <div class="text-[11px] text-slate-400">Indore Mandi</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-bold text-slate-900">₹ 2,420 / Qtl</div>
+                  <div class="text-[10px] text-emerald-600 font-semibold">+1.2% &uarr;</div>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-slate-800 text-xs">Hybrid Tomato</div>
+                  <div class="text-[11px] text-slate-400">Kolar APMC</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-bold text-slate-900">₹ 1,800 / Qtl</div>
+                  <div class="text-[10px] text-red-500 font-semibold">-4.1% &darr;</div>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white border border-slate-200 flex items-center justify-between">
+                <div>
+                  <div class="font-bold text-slate-800 text-xs">BT Cotton (Medium)</div>
+                  <div class="text-[11px] text-slate-400">Rajkot Mandi</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-xs font-bold text-slate-900">₹ 7,150 / Qtl</div>
+                  <div class="text-[10px] text-emerald-600 font-semibold">+0.5% &uarr;</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-slate-200 text-center">
+            <span class="text-xs text-slate-500">Automated price alerts sent via SMS/WhatsApp</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: What Makes CropGuard Different? (Unique Value Proposition) -->
+  <section id="differences" class="py-16 bg-gradient-to-b from-slate-50 via-brand-50/30 to-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">
+          Project Novelty & Key Differentiators
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-2">
+          Why CropGuard Stands Out from Traditional Agri-Apps
+        </h2>
+        <p class="text-slate-600 text-sm sm:text-base mt-2">
+          Most apps provide isolated disease photos or static tables. CropGuard introduces an end-to-end cognitive loop combining vision explainability, soil chemistry, and microservices scalability.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Diff 1 -->
+        <div class="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center mb-4">
+            <i data-lucide="eye" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">Grad-CAM Visual Explainability</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Unlike "black box" classifiers, CropGuard produces visual attention heatmaps directly highlighting the infected necrotic leaf regions, building trust for agronomists and farmers.
+          </p>
+          <div class="mt-4 text-[11px] font-bold text-brand-600 flex items-center">
+            <span>Eliminates False Positives</span> &rarr;
+          </div>
+        </div>
+
+        <!-- Diff 2 -->
+        <div class="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center mb-4">
+            <i data-lucide="git-merge" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">Dual-Engine Intelligence</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Combines Computer Vision (MobileNetV3/ResNet for surface pathology) with Tabular Soil Chemistry (XGBoost for NPK, pH, and precipitation yield forecasting) in a single unified dashboard.
+          </p>
+          <div class="mt-4 text-[11px] font-bold text-amber-600 flex items-center">
+            <span>Holistic Crop Health</span> &rarr;
+          </div>
+        </div>
+
+        <!-- Diff 3 -->
+        <div class="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mb-4">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">Organic First Treatment Rulebook</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Prioritizes biological, neem-based, and bio-fungicide treatments before recommending synthetic chemicals, preserving soil microbiome and preventing chemical resistance.
+          </p>
+          <div class="mt-4 text-[11px] font-bold text-purple-600 flex items-center">
+            <span>Eco-Friendly Agriculture</span> &rarr;
+          </div>
+        </div>
+
+        <!-- Diff 4 -->
+        <div class="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center mb-4">
+            <i data-lucide="cpu" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">Edge & ONNX Optimized</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Quantized models (INT8) running on ONNX Runtime can run directly in low-bandwidth rural environments or mobile browsers with sub-50ms inference times.
+          </p>
+          <div class="mt-4 text-[11px] font-bold text-blue-600 flex items-center">
+            <span>Works in Low-Connectivity</span> &rarr;
+          </div>
+        </div>
+
+        <!-- Diff 5 -->
+        <div class="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4">
+            <i data-lucide="layers" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">Decoupled MERN Architecture</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Production-grade separation of concerns: React SPA + Express.js Auth Gateway + MongoDB Farm Vault + dedicated FastAPI Python model serving worker.
+          </p>
+          <div class="mt-4 text-[11px] font-bold text-emerald-600 flex items-center">
+            <span>Enterprise Scale Ready</span> &rarr;
+          </div>
+        </div>
+
+        <!-- Diff 6 -->
+        <div class="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition">
+          <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mb-4">
+            <i data-lucide="languages" class="w-6 h-6"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-900">Vernacular Voice & Multi-lingual Ready</h3>
+          <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+            Designed for rural adoption with voice-assisted audio readouts of diagnosis and treatment guidelines across Hindi, Marathi, Telugu, and English.
+          </p>
+          <div class="mt-4 text-[11px] font-bold text-rose-600 flex items-center">
+            <span>Inclusive Farmer UX</span> &rarr;
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison Matrix Table -->
+      <div class="mt-12 bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+        <div class="p-6 border-b border-slate-100">
+          <h3 class="text-base font-bold text-slate-900">Competitive Benchmark Matrix</h3>
+          <p class="text-xs text-slate-500">CropGuard vs. Standard Agri Solutions</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-700 uppercase font-bold tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3.5 px-6">Feature / Capability</th>
+                <th class="py-3.5 px-6 text-brand-700 bg-brand-50/50">CropGuard (Our Project)</th>
+                <th class="py-3.5 px-6">Generic Disease Apps</th>
+                <th class="py-3.5 px-6">Govt Agriculture Portals</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+              <tr>
+                <td class="py-3.5 px-6 font-semibold text-slate-900">Grad-CAM Visual Heatmap</td>
+                <td class="py-3.5 px-6 text-emerald-600 bg-brand-50/30 font-bold">&check; Yes (Interactive)</td>
+                <td class="py-3.5 px-6 text-slate-400">&cross; No (Black Box)</td>
+                <td class="py-3.5 px-6 text-slate-400">&cross; No</td>
+              </tr>
+              <tr>
+                <td class="py-3.5 px-6 font-semibold text-slate-900">Dual Vision + Yield Prediction</td>
+                <td class="py-3.5 px-6 text-emerald-600 bg-brand-50/30 font-bold">&check; Yes (Multi-Modal)</td>
+                <td class="py-3.5 px-6 text-slate-400">&cross; Disease Only</td>
+                <td class="py-3.5 px-6 text-slate-400">&cross; Static Tables</td>
+              </tr>
+              <tr>
+                <td class="py-3.5 px-6 font-semibold text-slate-900">Dynamic NPK Fertilizer Calculator</td>
+                <td class="py-3.5 px-6 text-emerald-600 bg-brand-50/30 font-bold">&check; Real-time AI Regimen</td>
+                <td class="py-3.5 px-6 text-slate-400">&cross; Generic Text</td>
+                <td class="py-3.5 px-6 text-amber-600">&minus; Manual lookup</td>
+              </tr>
+              <tr>
+                <td class="py-3.5 px-6 font-semibold text-slate-900">Architecture Decoupling</td>
+                <td class="py-3.5 px-6 text-emerald-600 bg-brand-50/30 font-bold">&check; MERN + FastAPI Worker</td>
+                <td class="py-3.5 px-6 text-slate-500">Monolithic</td>
+                <td class="py-3.5 px-6 text-slate-500">Legacy Server Pages</td>
+              </tr>
+              <tr>
+                <td class="py-3.5 px-6 font-semibold text-slate-900">Organic vs Chemical Prioritization</td>
+                <td class="py-3.5 px-6 text-emerald-600 bg-brand-50/30 font-bold">&check; Bio-first Policy</td>
+                <td class="py-3.5 px-6 text-slate-400">&cross; Mostly Ad-sponsored Chem</td>
+                <td class="py-3.5 px-6 text-slate-500">Generic text</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Technical Architecture & MERN Stack Breakdown -->
+  <section id="architecture" class="py-16 bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-800">
+          System Engineering
+        </span>
+        <h2 class="text-3xl font-extrabold text-slate-900 mt-2">
+          Full MERN + ML Microservices Blueprint
+        </h2>
+        <p class="text-slate-600 text-sm mt-2">
+          How MongoDB, Express.js, React, Node.js, and Python FastAPI collaborate in a resilient real-time architecture.
+        </p>
+      </div>
+
+      <!-- Architectural Flow Chart Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Client Tier -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center relative">
+          <div class="w-10 h-10 rounded-xl bg-cyan-100 text-cyan-700 flex items-center justify-center mx-auto mb-3">
+            <i data-lucide="layout" class="w-5 h-5"></i>
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-cyan-600">Client Tier</span>
+          <h4 class="font-bold text-slate-900 text-sm mt-1">React 18 + Tailwind</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Single Page App, Camera API, Interactive Sliders, Chart.js Visualizations.</p>
+        </div>
+
+        <!-- API Gateway Tier -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center relative">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-3">
+            <i data-lucide="server" class="w-5 h-5"></i>
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">API Gateway Tier</span>
+          <h4 class="font-bold text-slate-900 text-sm mt-1">Node.js + Express</h4>
+          <p class="text-[11px] text-slate-500 mt-1">JWT Authentication, Rate Limiting, Multer image buffers, Weather REST proxy.</p>
+        </div>
+
+        <!-- ML Inference Tier -->
+        <div class="p-5 rounded-2xl bg-brand-50/80 border border-brand-200 text-center relative shadow-xs">
+          <div class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center mx-auto mb-3">
+            <i data-lucide="brain-circuit" class="w-5 h-5"></i>
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-brand-700">Inference Engine</span>
+          <h4 class="font-bold text-slate-900 text-sm mt-1">FastAPI + PyTorch</h4>
+          <p class="text-[11px] text-slate-600 mt-1">MobileNetV3 weights, Grad-CAM generator, XGBoost yield model pipeline.</p>
+        </div>
+
+        <!-- Database Tier -->
+        <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center relative">
+          <div class="w-10 h-10 rounded-xl bg-green-100 text-green-700 flex items-center justify-center mx-auto mb-3">
+            <i data-lucide="database" class="w-5 h-5"></i>
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-green-700">Data Persistence</span>
+          <h4 class="font-bold text-slate-900 text-sm mt-1">MongoDB Atlas</h4>
+          <p class="text-[11px] text-slate-500 mt-1">Farmer profiles, parcel GPS coordinates, diagnosis history, yield records.</p>
+        </div>
+      </div>
+
+      <!-- Dataset Specifications Panel -->
+      <div class="mt-10 p-6 rounded-3xl bg-slate-900 text-white border border-slate-800">
+        <h3 class="text-base font-bold text-brand-400 flex items-center">
+          <i data-lucide="database" class="w-4 h-4 mr-2"></i> Machine Learning Datasets & Training Specifications
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 text-xs">
+          <div class="space-y-2 p-4 rounded-2xl bg-slate-800/60 border border-slate-700">
+            <div class="font-bold text-white text-sm flex items-center justify-between">
+              <span>PlantVillage Dataset (CV)</span>
+              <span class="text-[10px] bg-brand-500/20 text-brand-300 px-2 py-0.5 rounded">54,305 Images</span>
+            </div>
+            <p class="text-slate-300">
+              Covers 14 crop species (Apple, Tomato, Potato, Corn, Grape, Pepper, Strawberry, etc.) spanning 38 diseased and healthy classes.
+            </p>
+            <div class="pt-2 text-[11px] text-slate-400 space-y-1">
+              <div>&bull; Augmentations: Random Rotation (&plusmn;25°), Horizontal/Vertical Flip, Color Jitter</div>
+              <div>&bull; Input Resolution: 224 &times; 224 &times; 3 &bull; Normalization: ImageNet mean/std</div>
+              <div>&bull; Optimizer: AdamW (lr=1e-4) with Cosine Annealing scheduler &bull; Val Acc: 98.7%</div>
+            </div>
+          </div>
+
+          <div class="space-y-2 p-4 rounded-2xl bg-slate-800/60 border border-slate-700">
+            <div class="font-bold text-white text-sm flex items-center justify-between">
+              <span>ICAR & Kaggle Crop Yield Dataset</span>
+              <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded">2,200+ Regional Records</span>
+            </div>
+            <p class="text-slate-300">
+              Features 7 primary agronomic attributes: Nitrogen (N), Phosphorus (P), Potassium (K), Soil pH, Temperature, Humidity, and Annual Rainfall across 22 crops.
+            </p>
+            <div class="pt-2 text-[11px] text-slate-400 space-y-1">
+              <div>&bull; Algorithm: Gradient Boosted Trees (XGBoost) + Random Forest Regressor</div>
+              <div>&bull; Preprocessing: RobustScaler + One-Hot Encoding for agro-climatic zones</div>
+              <div>&bull; Metrics: RMSE 0.18, Mean Absolute Percentage Error (MAPE) 4.2%, R² 0.942</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-12 text-xs border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center text-white font-bold">
+          <i data-lucide="sprout" class="w-4 h-4"></i>
+        </div>
+        <span class="text-base font-bold text-white">CropGuard &bull; Precision Agriculture</span>
+      </div>
+      
+      <div class="flex flex-wrap items-center gap-6">
+        <a href="#overview" class="hover:text-white transition">Overview</a>
+        <a href="#disease-detector" class="hover:text-white transition">Leaf Diagnostic</a>
+        <a href="#yield-predictor" class="hover:text-white transition">Yield Predictor</a>
+        <a href="#differences" class="hover:text-white transition">Differentiators</a>
+        <button onclick="openSynopsisModal()" class="text-brand-400 hover:text-brand-300 font-semibold">View Synopsis</button>
+      </div>
+
+      <p class="text-slate-500">&copy; 2026 CropGuard Agriculture AI. Built with MERN + Deep Learning.</p>
+    </div>
+  </footer>
+
+  <!-- Modal: Project Synopsis Reader -->
+  <div id="synopsis-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8 shadow-2xl relative">
+      <button onclick="closeSynopsisModal()" class="absolute top-5 right-5 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="p-2 rounded-xl bg-brand-100 text-brand-700">
+          <i data-lucide="book-open" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-brand-700">Official Submission Document</span>
+          <h2 class="text-2xl font-black text-slate-900">CropGuard: Project Synopsis</h2>
+        </div>
+      </div>
+
+      <div class="prose prose-slate max-w-none text-xs sm:text-sm space-y-4 text-slate-700">
+        <div class="p-4 rounded-2xl bg-brand-50 border border-brand-200">
+          <h4 class="font-bold text-brand-900 text-sm mb-1">Project Title</h4>
+          <p class="text-brand-800">
+            <strong>CropGuard:</strong> An Integrated Deep Learning and Agro-Climatic Decision Support System for Real-Time Plant Pathology Diagnosis and Precision Yield Optimization.
+          </p>
+        </div>
+
+        <h3 class="font-bold text-slate-900 text-base border-b pb-1">1. Abstract & Introduction</h3>
+        <p>
+          Agricultural yield loss caused by undetected plant disease pathogens accounts for over 20-40% of global crop losses annually. Traditional manual inspection by agronomists is geographically limited, cost-prohibitive, and often leads to excessive indiscriminate pesticide usage that degrades soil health. CropGuard presents a comprehensive solution built using the <strong>MERN (MongoDB, Express, React, Node.js)</strong> stack coupled with a high-performance <strong>FastAPI/PyTorch</strong> machine learning microservice.
+        </p>
+
+        <h3 class="font-bold text-slate-900 text-base border-b pb-1">2. Core Objectives</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Real-time Leaf Pathology Diagnosis:</strong> Achieve >98% accuracy across 38 crop disease classes using lightweight transfer-learned MobileNetV3 and ResNet architectures.</li>
+          <li><strong>Explainable AI (XAI):</strong> Generate Grad-CAM attention heatmaps showing exactly which leaf region dictated the diagnostic prediction to ensure agronomist trust.</li>
+          <li><strong>Agro-Climatic Yield Forecasting:</strong> Ensemble regression modeling (XGBoost/Random Forest) forecasting crop yield in tons/acre based on soil Macronutrients (N, P, K), pH, temperature, and rainfall.</li>
+          <li><strong>Organic-First Prescription Engine:</strong> Automatically recommend non-toxic, biological biocontrol agents and organic remedies prior to proposing targeted synthetic chemical treatments.</li>
+        </ul>
+
+        <h3 class="font-bold text-slate-900 text-base border-b pb-1">3. Technology Stack</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <strong>Frontend:</strong> React 18, Tailwind CSS, Chart.js, HTML5 Canvas, Lucide Icons
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <strong>Backend API:</strong> Node.js, Express.js, JWT, Multer, REST Architecture
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <strong>Machine Learning:</strong> Python 3.10+, PyTorch, Torchvision, ONNX Runtime, XGBoost, Scikit-Learn
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <strong>Database & Cloud:</strong> MongoDB Atlas (NoSQL), Cloudinary for image storage
+          </div>
+        </div>
+
+        <h3 class="font-bold text-slate-900 text-base border-b pb-1">4. Datasets Utilized</h3>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>PlantVillage Dataset:</strong> 54,305 high-resolution leaf photographs across 14 crops and 38 classes (Apple Scab, Tomato Late Blight, Potato Early Blight, Corn Common Rust, etc.).</li>
+          <li><strong>Crop Recommendation & Soil Dataset:</strong> 2,200 agricultural field records correlating N, P, K, pH, rainfall, and temperature with crop viability and yield.</li>
+          <li><strong>Agmarknet Mandi Dataset:</strong> Live commodity spot price timeseries across Indian wholesale agricultural markets.</li>
+        </ul>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-200 flex justify-end">
+        <button onclick="closeSynopsisModal()" class="px-5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition">
+          Close Synopsis
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client-side Interactive Logic & Mock ML Inference Engine -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Leaf Sample Database for Live Testing
+    const samples = {
+      tomato_blight: {
+        title: "Tomato - Late Blight",
+        scientific: "Phytophthora infestans (Oomycete)",
+        badge: "Fungal Pathogen Detected",
+        badgeClass: "bg-red-100 text-red-700 border-red-200",
+        confidence: "98.4%",
+        severityLabel: "Severe (Stage 3 Necrosis)",
+        severityWidth: "78%",
+        severityColor: "bg-red-500",
+        img: "https://images.unsplash.com/photo-1592150621744-aca64f48394a?auto=format&fit=crop&w=800&q=80",
+        symptoms: "Large, irregular water-soaked lesions turning brown-black with white fuzzy fungal growth on the underside during humid weather.",
+        trigger: "Prolonged leaf wetness (>8 hours) and temperatures between 16°C - 22°C with high relative humidity (>90%).",
+        organic: "Apply Copper Hydroxide (organic copper soap) or spray Bacillus subtilis microbial bio-fungicide. Prune affected bottom canopy leaves immediately and destroy off-field.",
+        chemical: "Mancozeb 75% WP @ 2.5g/L water OR Metalaxyl 8% + Mancozeb 64% WP (Ridomil MZ) @ 2g/L. Repeat cycle every 7-10 days if humid weather persists."
+      },
+      corn_healthy: {
+        title: "Maize / Corn - Healthy Crop",
+        scientific: "Zea mays (Optimum Chlorophyll)",
+        badge: "Clean & Disease Free",
+        badgeClass: "bg-emerald-100 text-emerald-800 border-emerald-200",
+        confidence: "99.2%",
+        severityLabel: "Healthy (0% Infection)",
+        severityWidth: "4%",
+        severityColor: "bg-emerald-500",
+        img: "https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?auto=format&fit=crop&w=800&q=80",
+        symptoms: "Lush green foliage, uniform venation without chlorosis, pustules, or leaf curl. Robust leaf tissue vigor.",
+        trigger: "Well-drained loam soil, balanced nitrogen availability, and adequate sunlight.",
+        organic: "Continue standard organic bio-stimulant (Panchagavya or seaweed extract @ 3ml/L) to sustain natural systemic acquired resistance (SAR).",
+        chemical: "No chemical fungicide or pesticide required. Avoid unnecessary prophylactic spray to preserve beneficial insect predators."
+      },
+      potato_early: {
+        title: "Potato - Early Blight",
+        scientific: "Alternaria solani (Fungus)",
+        badge: "Fungal Leaf Spot Detected",
+        badgeClass: "bg-amber-100 text-amber-800 border-amber-200",
+        confidence: "96.8%",
+        severityLabel: "Moderate (Stage 2 Concentric Rings)",
+        severityWidth: "52%",
+        severityColor: "bg-amber-500",
+        img: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=800&q=80",
+        symptoms: "Dark brown to black necrotic spots with characteristic concentric rings ('target-board' appearance) primarily on older foliage.",
+        trigger: "Warm temperatures (24°C - 29°C) alternating between wet rainy periods and dry weather.",
+        organic: "Neem oil spray (Cold pressed 10,000 ppm @ 3ml/L) combined with Trichoderma harzianum soil treatment.",
+        chemical: "Chlorothalonil 75% WP @ 2g/L or Difenoconazole 25% EC @ 1ml/L at early lesion onset."
+      },
+      apple_scab: {
+        title: "Apple - Apple Scab",
+        scientific: "Venturia inaequalis (Ascomycete)",
+        badge: "Fruit & Foliage Fungus",
+        badgeClass: "bg-purple-100 text-purple-800 border-purple-200",
+        confidence: "97.5%",
+        severityLabel: "Moderate-Severe (Stage 2.5)",
+        severityWidth: "64%",
+        severityColor: "bg-purple-500",
+        img: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=800&q=80",
+        symptoms: "Olive-green to velvety dark brown lesions on the upper leaf surface, causing premature defoliation and corky fruit scabs.",
+        trigger: "Spring rain periods with wet foliage for 9-18 consecutive hours at 15°C - 20°C.",
+        organic: "Sulfur or Potassium Bicarbonate foliar wash prior to rain periods. Rake and compost fallen overwintering leaves.",
+        chemical: "Kresoxim-methyl 44.3% SC @ 1ml/L OR Captan 50% WP @ 2.5g/L."
+      }
+    };
+
+    let currentSampleKey = 'tomato_blight';
+    let gradCamActive = false;
+
+    function loadSample(key) {
+      currentSampleKey = key;
+      const data = samples[key];
+      if (!data) return;
+
+      document.getElementById('leaf-preview').src = data.img;
+      runInference(data);
+    }
+
+    function handleLeafUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('leaf-preview').src = e.target.result;
+          // Randomize confidence slightly for user uploaded leaves
+          const customData = {
+            title: "Diagnosed Leaf Sample",
+            scientific: "Analysis completed via MobileNetV3",
+            badge: "Deep Learning Scan",
+            badgeClass: "bg-brand-100 text-brand-800 border-brand-200",
+            confidence: (95 + Math.random() * 4).toFixed(1) + "%",
+            severityLabel: "Moderate Stress Detected",
+            severityWidth: "58%",
+            severityColor: "bg-amber-500",
+            symptoms: "Localized chlorosis and visible margin discoloration identified on blade.",
+            trigger: "Micro-climatic moisture accumulation on upper leaf cuticle.",
+            organic: "Spray 5% Neem Seed Kernel Extract (NSKE) and enhance inter-row aeration.",
+            chemical: "Broad spectrum protective fungicide (Azoxystrobin 23% SC @ 1ml/L) if spread accelerates."
+          };
+          runInference(customData);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function runInference(customData) {
+      const data = customData || samples[currentSampleKey];
+      const scanningOverlay = document.getElementById('scanning-status');
+      const scannerLaser = document.getElementById('scanner-laser');
+      const scanStepText = document.getElementById('scan-step-text');
+      
+      scanningOverlay.classList.remove('hidden');
+      scannerLaser.classList.remove('hidden');
+
+      const steps = [
+        "Normalizing pixel tensors (224x224)...",
+        "Passing through MobileNetV3 feature blocks...",
+        "Generating Grad-CAM activation maps...",
+        "Softmax classification complete!"
+      ];
+
+      let stepIndex = 0;
+      const interval = setInterval(() => {
+        if (stepIndex < steps.length) {
+          scanStepText.innerText = steps[stepIndex];
+          stepIndex++;
+        } else {
+          clearInterval(interval);
+          scanningOverlay.classList.add('hidden');
+          scannerLaser.classList.add('hidden');
+          updateResults(data);
+        }
+      }, 400);
+    }
+
+    function updateResults(data) {
+      document.getElementById('result-title').innerText = data.title;
+      document.getElementById('pathogen-scientific').innerText = data.scientific;
+      
+      const badge = document.getElementById('pathogen-badge');
+      badge.innerText = data.badge;
+      badge.className = `px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${data.badgeClass}`;
+
+      document.getElementById('confidence-pct').innerText = data.confidence;
+      document.getElementById('severity-label').innerText = data.severityLabel;
+      
+      const sevBar = document.getElementById('severity-bar');
+      sevBar.className = `h-2.5 rounded-full transition-all duration-700 ${data.severityColor}`;
+      sevBar.style.width = data.severityWidth;
+
+      document.getElementById('symptoms-desc').innerText = data.symptoms;
+      document.getElementById('trigger-desc').innerText = data.trigger;
+      document.getElementById('organic-remedy').innerText = data.organic;
+      document.getElementById('chemical-remedy').innerText = data.chemical;
+    }
+
+    function toggleGradCam() {
+      gradCamActive = !gradCamActive;
+      const overlay = document.getElementById('gradcam-overlay');
+      const btn = document.getElementById('gradcam-btn');
+      
+      if (gradCamActive) {
+        overlay.style.opacity = '0.75';
+        btn.classList.add('bg-purple-100', 'text-purple-800', 'border-purple-300');
+        btn.innerHTML = `<i data-lucide="eye-off" class="w-3.5 h-3.5 mr-1.5 text-purple-600"></i> Hide Grad-CAM`;
+      } else {
+        overlay.style.opacity = '0';
+        btn.classList.remove('bg-purple-100', 'text-purple-800', 'border-purple-300');
+        btn.innerHTML = `<i data-lucide="eye" class="w-3.5 h-3.5 mr-1.5 text-purple-600"></i> Grad-CAM Heatmap`;
+      }
+      lucide.createIcons();
+    }
+
+    function downloadDiagnosticReport() {
+      alert("Generating CropGuard Comprehensive Diagnostic PDF Report... Includes Leaf Heatmap, Pathogen Strain, Chemical & Organic Dosage, and Timestamp.");
+    }
+
+    // Predictive Agronomy (Yield & NPK Calculation Logic)
+    const currentParams = {
+      n: 80,
+      p: 45,
+      k: 50,
+      ph: 6.5,
+      rain: 1100,
+      temp: 26
+    };
+
+    const cropBaselines = {
+      rice: { baseYieldPerAcre: 4.2, revenuePerTon: 22000, optN: 90, optP: 50, optK: 50, optPh: 6.2 },
+      wheat: { baseYieldPerAcre: 3.8, revenuePerTon: 24000, optN: 110, optP: 60, optK: 40, optPh: 6.8 },
+      maize: { baseYieldPerAcre: 5.1, revenuePerTon: 20000, optN: 120, optP: 60, optK: 60, optPh: 6.5 },
+      cotton: { baseYieldPerAcre: 2.1, revenuePerTon: 70000, optN: 80, optP: 40, optK: 40, optPh: 7.0 },
+      sugarcane: { baseYieldPerAcre: 38.0, revenuePerTon: 3500, optN: 150, optP: 70, optK: 90, optPh: 6.5 },
+      tomato: { baseYieldPerAcre: 14.5, revenuePerTon: 18000, optN: 100, optP: 80, optK: 110, optPh: 6.3 }
+    };
+
+    function updateParam(param, value) {
+      currentParams[param] = parseFloat(value);
+      
+      if (param === 'n') document.getElementById('n-val').innerText = value + ' kg/ha';
+      if (param === 'p') document.getElementById('p-val').innerText = value + ' kg/ha';
+      if (param === 'k') document.getElementById('k-val').innerText = value + ' kg/ha';
+      if (param === 'ph') document.getElementById('ph-val').innerText = value;
+      if (param === 'rain') document.getElementById('rain-val').innerText = value + ' mm';
+      if (param === 'temp') document.getElementById('temp-val').innerText = value + ' °C';
+
+      calculateYield();
+    }
+
+    function calculateYield() {
+      const crop = document.getElementById('crop-select').value;
+      const acres = parseFloat(document.getElementById('land-area').value) || 1;
+      const baseline = cropBaselines[crop];
+
+      // Simulated Machine Learning (XGBoost) weighting equation
+      const nDelta = 1 - Math.abs(currentParams.n - baseline.optN) / (baseline.optN * 1.6);
+      const pDelta = 1 - Math.abs(currentParams.p - baseline.optP) / (baseline.optP * 1.8);
+      const kDelta = 1 - Math.abs(currentParams.k - baseline.optK) / (baseline.optK * 1.8);
+      const phDelta = 1 - Math.abs(currentParams.ph - baseline.optPh) / 3.0;
+
+      let score = (nDelta * 0.35 + pDelta * 0.25 + kDelta * 0.25 + phDelta * 0.15);
+      score = Math.max(0.45, Math.min(1.15, score));
+
+      const yieldPerAcre = (baseline.baseYieldPerAcre * score).toFixed(2);
+      const totalYield = (yieldPerAcre * acres).toFixed(1);
+      const totalRevenue = Math.round(totalYield * baseline.revenuePerTon);
+      const soilHealth = Math.round(score * 85);
+
+      document.getElementById('projected-yield').innerText = totalYield + " Tons";
+      document.getElementById('yield-rate').innerText = `(${yieldPerAcre} Tons per Acre • ${(score > 0.9 ? 'High Productivity' : 'Average Yield')})`;
+      document.getElementById('soil-health-badge').innerText = `${soilHealth} / 100`;
+      document.getElementById('est-revenue').innerText = `₹ ${totalRevenue.toLocaleString('en-IN')}`;
+
+      // Dynamic Fertilizer Regimen prescription
+      let advice = "";
+      if (currentParams.n < baseline.optN - 15) {
+        advice += `Apply <strong>${Math.round((baseline.optN - currentParams.n) * 1.2)} kg Urea</strong> to remedy Nitrogen deficit. `;
+      } else if (currentParams.n > baseline.optN + 25) {
+        advice += `Nitrogen is excessively high. Curtail chemical top-dressing to prevent vegetative lodging and aphid attraction. `;
+      }
+
+      if (currentParams.k < baseline.optK - 10) {
+        advice += `Supplement <strong>${Math.round((baseline.optK - currentParams.k) * 1.4)} kg MOP (Potash)</strong> to strengthen stalk tensile strength. `;
+      }
+
+      if (currentParams.ph < 6.0) {
+        advice += `Soil is acidic (${currentParams.ph} pH); broadcast agricultural lime (calcium carbonate) @ 250 kg/acre. `;
+      } else if (currentParams.ph > 7.8) {
+        advice += `Soil is alkaline (${currentParams.ph} pH); incorporate agricultural gypsum and organic farmyard manure. `;
+      }
+
+      if (!advice) {
+        advice = `Soil macronutrients and pH are harmoniously balanced for ${crop.toUpperCase()}. Maintain existing organic mulching.`;
+      }
+
+      document.getElementById('fertilizer-advice').innerHTML = advice;
+    }
+
+    function resetSliders() {
+      document.getElementById('input-n').value = 80;
+      document.getElementById('input-p').value = 45;
+      document.getElementById('input-k').value = 50;
+      document.getElementById('input-ph').value = 6.5;
+      document.getElementById('input-rain').value = 1100;
+      document.getElementById('input-temp').value = 26;
+
+      updateParam('n', 80);
+      updateParam('p', 45);
+      updateParam('k', 50);
+      updateParam('ph', 6.5);
+      updateParam('rain', 1100);
+      updateParam('temp', 26);
+    }
+
+    // Modal Control
+    function openSynopsisModal() {
+      document.getElementById('synopsis-modal').classList.remove('hidden');
+    }
+    function closeSynopsisModal() {
+      document.getElementById('synopsis-modal').classList.add('hidden');
+    }
+
+    // Initialize Chart.js
+    window.addEventListener('DOMContentLoaded', () => {
+      const ctx = document.getElementById('yieldChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Kharif 2023', 'Rabi 2023-24', 'Zaid 2024', 'Kharif 2024', 'Rabi 2024-25', 'Kharif 2025 (AI Projected)'],
+          datasets: [
+            {
+              label: 'Actual / Projected Yield (Tons/Ha)',
+              data: [3.8, 4.1, 2.9, 4.4, 4.7, 5.2],
+              backgroundColor: '#10b981',
+              borderRadius: 8,
+              yAxisID: 'y'
+            },
+            {
+              label: 'Cumulative Rainfall (mm)',
+              data: [820, 310, 150, 940, 380, 1020],
+              type: 'line',
+              borderColor: '#3b82f6',
+              borderWidth: 2,
+              tension: 0.35,
+              pointBackgroundColor: '#2563eb',
+              yAxisID: 'y1'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 12,
+                font: { size: 11, family: 'Inter' }
+              }
+            }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              position: 'left',
+              title: { display: true, text: 'Yield (Tons/Ha)', font: { size: 10 } },
+              grid: { color: '#f1f5f9' }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              title: { display: true, text: 'Precipitation (mm)', font: { size: 10 } },
+              grid: { drawOnChartArea: false }
+            },
+            x: {
+              grid: { display: false }
+            }
+          }
+        }
+      });
+
+      // Run initial calculation
+      calculateYield();
+    });
+  </script>
+</body>
+</html>

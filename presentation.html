@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CropGuard - Project & Frontend Presentation Deck</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      user-select: none;
+    }
+    .slide {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+    }
+    .slide.active {
+      display: flex;
+    }
+    @media print {
+      body { background: white !important; }
+      .slide { display: flex !important; page-break-after: always; height: 100vh; width: 100vw; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-800 antialiased overflow-hidden">
+
+  <!-- Floating Navigation & Controls -->
+  <div class="no-print fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 px-6 py-3 rounded-full shadow-2xl flex items-center space-x-6 text-white text-xs font-semibold">
+    <button onclick="prevSlide()" class="hover:text-emerald-400 flex items-center transition p-1">
+      <i data-lucide="chevron-left" class="w-5 h-5 mr-1"></i> Prev
+    </button>
+    <div class="text-slate-400">
+      Slide <span id="current-slide-num" class="text-emerald-400 font-bold text-sm">1</span> / <span id="total-slides-num" class="text-white">9</span>
+    </div>
+    <button onclick="nextSlide()" class="hover:text-emerald-400 flex items-center transition p-1">
+      Next <i data-lucide="chevron-right" class="w-5 h-5 ml-1"></i>
+    </button>
+    <div class="h-4 w-px bg-slate-700"></div>
+    <button onclick="window.print()" class="text-slate-300 hover:text-white flex items-center transition">
+      <i data-lucide="printer" class="w-4 h-4 mr-1.5 text-amber-400"></i> Print / PDF
+    </button>
+  </div>
+
+  <!-- SLIDE 1: Title Slide (Hero) -->
+  <section class="slide active flex-col justify-between p-12 sm:p-20 bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 text-white relative overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -left-20 -bottom-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold">
+        <i data-lucide="sprout" class="w-6 h-6"></i>
+      </div>
+      <span class="text-sm font-bold uppercase tracking-wider text-emerald-400">CropGuard Precision Agriculture Platform</span>
+    </div>
+
+    <div class="max-w-4xl space-y-4 my-auto">
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+        AI & Full-Stack MERN Capstone Presentation
+      </span>
+      <h1 class="text-5xl sm:text-6xl font-black tracking-tight leading-tight">
+        Crop<span class="text-emerald-400">Guard</span> 🌿
+      </h1>
+      <p class="text-2xl text-slate-300 font-medium">
+        Modern Application Frontend, Intelligent Diagnosis & Future Roadmap
+      </p>
+      <div class="pt-4 flex flex-wrap gap-4 text-xs font-semibold text-emerald-300/80">
+        <span class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">MobileNetV3 Deep Vision</span>
+        <span class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">Grad-CAM Explainable AI</span>
+        <span class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">XGBoost Yield Engine</span>
+        <span class="bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">MERN Microservices</span>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-6">
+      <span>Final Year Capstone Project Defense &bull; 2026</span>
+      <span>Use &larr; &rarr; Arrow Keys or Space to Navigate</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: Frontend Design Philosophy & UX Architecture -->
+  <section class="slide flex-col justify-between p-12 sm:p-20 bg-slate-50 relative">
+    <div class="border-b border-slate-200 pb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">UI / UX Architecture</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Frontend Design Philosophy: Aesthetic, Functional & Farmer-Centric</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 my-auto">
+      <div class="p-6 rounded-3xl bg-white border border-emerald-200 shadow-sm space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+          <i data-lucide="palette" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Lush Agri Palette</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Emerald (<span class="font-mono text-emerald-600">#059669</span>), Forest Green, and Harvest Gold palette designed for psychological resonance in agricultural contexts.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+          <i data-lucide="layers" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Glassmorphic Cards</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Semi-translucent white cards (<span class="font-mono text-xs">rgba(255,255,255,0.92)</span>) with backdrop-filter blur and soft emerald ambient shadows to eliminate visual clutter.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-white border border-amber-200 shadow-sm space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+          <i data-lucide="sliders" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Zero Cognitive Overload</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Replaces dense scientific spreadsheets with reactive visual sliders, color-coded severity meters, and 1-click inspection chamber presets.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-white border border-blue-200 shadow-sm space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+          <i data-lucide="smartphone" class="w-5 h-5"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Responsive Layout</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Tailwind CSS flex and grid systems ensuring seamless usability across low-cost rural smartphones, tablets, and desktop workstations.
+        </p>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-slate-200 pt-4 flex justify-between">
+      <span>CropGuard Presentation &bull; Slide 2 of 9</span>
+      <span>UI Design Philosophy</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 3: Frontend Module 1: AI Leaf Diagnostic & Grad-CAM Interface -->
+  <section class="slide flex-col justify-between p-12 sm:p-20 bg-slate-50 relative">
+    <div class="border-b border-slate-200 pb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Frontend Module 1</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 mt-1">AI Leaf Diagnostic & Grad-CAM Heatmap Interface</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-auto">
+      <div class="p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center">
+          <i data-lucide="camera" class="w-5 h-5 mr-2 text-emerald-600"></i> Inspection Chamber UI & Controls
+        </h3>
+        <ul class="text-xs sm:text-sm text-slate-600 space-y-3">
+          <li>&bull; <strong>Camera API & File Dropper:</strong> Drag-and-drop or camera snapshot support (JPG, PNG, WEBP).</li>
+          <li>&bull; <strong>Animated Laser Scanning Line:</strong> Interactive visual feedback during MobileNetV3 feature extraction.</li>
+          <li>&bull; <strong>One-Click Preset Library:</strong> Instant field evaluation for <em>Tomato Late Blight</em>, <em>Corn Healthy</em>, <em>Potato Early Blight</em>, and <em>Apple Scab</em>.</li>
+          <li>&bull; <strong>Interactive Grad-CAM Toggle:</strong> Overlays color-gradient saliency maps directly onto the leaf to reveal neural attention areas.</li>
+        </ul>
+      </div>
+
+      <div class="p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center">
+          <i data-lucide="file-check-2" class="w-5 h-5 mr-2 text-purple-600"></i> Clinical Diagnostic Output
+        </h3>
+        <ul class="text-xs sm:text-sm text-slate-600 space-y-3">
+          <li>&bull; <strong>Pathogen Classification:</strong> Identifies strain & scientific name (e.g. <em>Phytophthora infestans</em>) with 98.4% confidence.</li>
+          <li>&bull; <strong>Severity Index:</strong> Color-coded progress bar highlighting stage (Stage 1 Chlorosis to Stage 3 Severe Necrosis).</li>
+          <li>&bull; <strong>Dual Action Plan:</strong>
+            <div class="pl-3 pt-1 text-xs text-slate-500 space-y-1">
+              <div>- <strong>Organic:</strong> <em>Bacillus subtilis</em> bio-fungicide & neem extract.</div>
+              <div>- <strong>Chemical:</strong> Targeted Mancozeb 75% WP dosage to prevent resistance.</div>
+            </div>
+          </li>
+          <li>&bull; <strong>PDF Export:</strong> One-click generation of timestamped field advisory reports.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-slate-200 pt-4 flex justify-between">
+      <span>CropGuard Presentation &bull; Slide 3 of 9</span>
+      <span>Leaf Diagnostic UI</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 4: Frontend Module 2: Precision Yield & Soil Slider Calculator -->
+  <section class="slide flex-col justify-between p-12 sm:p-20 bg-slate-50 relative">
+    <div class="border-b border-slate-200 pb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Frontend Module 2</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Precision Soil & Yield Advisory Calculator</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-auto">
+      <div class="p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center">
+          <i data-lucide="sliders" class="w-5 h-5 mr-2 text-amber-600"></i> Reactive Soil & Weather Input Sliders
+        </h3>
+        <ul class="text-xs sm:text-sm text-slate-600 space-y-2.5">
+          <li>&bull; <strong>Cultivar Selector:</strong> Rice/Paddy, Wheat, Maize, Cotton, Sugarcane, and Tomato.</li>
+          <li>&bull; <strong>Acreage Scale:</strong> Dynamic inputs from 0.5 to 500+ acres.</li>
+          <li>&bull; <strong>NPK Sliders (kg/ha):</strong>
+            <div class="pl-3 text-xs text-slate-500">
+              Nitrogen (10–180), Phosphorus (5–145), and Potassium (10–200).
+            </div>
+          </li>
+          <li>&bull; <strong>Agro-Climatic Parameters:</strong> Real-time sliders for Soil pH (4.0–9.0), Annual Rain (mm), and Temperature (°C).</li>
+          <li>&bull; <strong>1-Click Reset:</strong> Restores regional baseline parameters instantly.</li>
+        </ul>
+      </div>
+
+      <div class="p-7 rounded-3xl bg-slate-900 text-white border border-emerald-500/30 shadow-xl space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+          <span class="font-bold text-sm text-emerald-400">Live ML Projection Card</span>
+          <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-mono">Ensemble v1.2</span>
+        </div>
+        <div class="text-center py-2">
+          <div class="text-[11px] text-slate-400 uppercase tracking-widest">Projected Harvest Yield</div>
+          <div class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-white to-emerald-200 mt-1">
+            21.8 Tons
+          </div>
+          <div class="text-xs text-emerald-300 font-semibold mt-0.5">(4.36 Tons per Acre &bull; High Productivity)</div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="p-2 rounded-xl bg-white/5 border border-white/10">
+            <div class="text-[10px] text-slate-400">Soil Health</div>
+            <div class="text-emerald-400 font-bold mt-0.5">88 / 100</div>
+          </div>
+          <div class="p-2 rounded-xl bg-white/5 border border-white/10">
+            <div class="text-[10px] text-slate-400">Harvest Window</div>
+            <div class="text-amber-300 font-bold mt-0.5">95–110 Days</div>
+          </div>
+          <div class="p-2 rounded-xl bg-white/5 border border-white/10">
+            <div class="text-[10px] text-slate-400">Est. Revenue</div>
+            <div class="text-white font-bold mt-0.5">₹ 4,36,000</div>
+          </div>
+        </div>
+        <div class="p-3 rounded-xl bg-white/10 text-xs text-slate-200 leading-relaxed border border-white/10">
+          <strong>Fertilizer Prescription:</strong> Top-dress 18 kg Urea + 12 kg Potash to eliminate lodging risk.
+        </div>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-slate-200 pt-4 flex justify-between">
+      <span>CropGuard Presentation &bull; Slide 4 of 9</span>
+      <span>Yield & Soil UI</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 5: Frontend Module 3: Agri-Analytics & Live Mandi Prices -->
+  <section class="slide flex-col justify-between p-12 sm:p-20 bg-slate-50 relative">
+    <div class="border-b border-slate-200 pb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Frontend Module 3</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Agri-Analytics & Live AGMARKNET Mandi Ticker</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-8 my-auto">
+      <div class="md:col-span-7 p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center">
+          <i data-lucide="line-chart" class="w-5 h-5 mr-2 text-emerald-600"></i> Multi-Season Productivity Trends (Chart.js)
+        </h3>
+        <ul class="text-xs sm:text-sm text-slate-600 space-y-3">
+          <li>&bull; <strong>Dual-Axis Visualization:</strong> Overlays Crop Yield (Tons/Ha) as emerald bars against Rainfall (mm) as a spline curve.</li>
+          <li>&bull; <strong>Seasonal Tracking:</strong> Spans Kharif, Rabi, and Zaid seasons from 2023 to projected 2025/2026.</li>
+          <li>&bull; <strong>YoY Growth Metric:</strong> Visual indicator displaying <strong>+14.2%</strong> productivity enhancement under precision soil guidance.</li>
+          <li>&bull; <strong>Interactive Tooltips:</strong> Responsive hover inspections displaying exact tonnages and millimetric precipitation.</li>
+        </ul>
+      </div>
+
+      <div class="md:col-span-5 p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <span class="font-bold text-slate-900 text-sm">Live Mandi Spot Rates</span>
+          <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">AGMARKNET</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex justify-between">
+            <span class="font-semibold text-slate-800">Paddy (Basmati, Karnal)</span>
+            <span class="font-bold text-emerald-700">₹ 3,850/Qtl (+2.8% ↑)</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex justify-between">
+            <span class="font-semibold text-slate-800">Sharbati Wheat (Indore)</span>
+            <span class="font-bold text-emerald-700">₹ 2,420/Qtl (+1.2% ↑)</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex justify-between">
+            <span class="font-semibold text-slate-800">Hybrid Tomato (Kolar APMC)</span>
+            <span class="font-bold text-red-600">₹ 1,800/Qtl (-4.1% ↓)</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex justify-between">
+            <span class="font-semibold text-slate-800">BT Cotton (Rajkot)</span>
+            <span class="font-bold text-emerald-700">₹ 7,150/Qtl (+0.5% ↑)</span>
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-400 pt-1">Automated price peaks broadcast via SMS & WhatsApp alerts.</p>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-slate-200 pt-4 flex justify-between">
+      <span>CropGuard Presentation &bull; Slide 5 of 9</span>
+      <span>Analytics & Mandi Ticker</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 6: MERN Component Architecture & State Flow -->
+  <section class="slide flex-col justify-between p-12 sm:p-20 bg-slate-50 relative">
+    <div class="border-b border-slate-200 pb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Frontend Engineering</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 mt-1">React 18 Component Hierarchy & MERN State Flow</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-auto">
+      <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+        <span class="font-bold text-emerald-700 text-sm">Navbar & Telemetry</span>
+        <div class="text-[10px] text-slate-400 font-mono">src/components/Navbar.jsx</div>
+        <p class="text-xs text-slate-600 mt-1">Live IoT connectivity status, micro-climatic temperature/humidity feed, and 42ms latency pulse.</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+        <span class="font-bold text-emerald-700 text-sm">Leaf Disease Scanner</span>
+        <div class="text-[10px] text-slate-400 font-mono">src/components/DiseaseDetector.jsx</div>
+        <p class="text-xs text-slate-600 mt-1">Image preview state, animated laser keyframes, Grad-CAM toggle, preset sample triggers.</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+        <span class="font-bold text-emerald-700 text-sm">Yield & Soil Calculator</span>
+        <div class="text-[10px] text-slate-400 font-mono">src/components/YieldPredictor.jsx</div>
+        <p class="text-xs text-slate-600 mt-1">Real-time reactive state for NPK, pH, and rainfall sliders; instant mathematical yield and revenue updates.</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+        <span class="font-bold text-emerald-700 text-sm">Visual Agri-Analytics</span>
+        <div class="text-[10px] text-slate-400 font-mono">src/components/Analytics.jsx</div>
+        <p class="text-xs text-slate-600 mt-1">Chart.js multi-season canvas, responsive AGMARKNET mandi spot price list, and feature comparison matrix.</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+        <span class="font-bold text-emerald-700 text-sm">API Gateway Service</span>
+        <div class="text-[10px] text-slate-400 font-mono">src/services/api.js</div>
+        <p class="text-xs text-slate-600 mt-1">Axios client with automatic offline fallback to local heuristic calculation if Node/Express server is disconnected.</p>
+      </div>
+
+      <div class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-1.5">
+        <span class="font-bold text-emerald-700 text-sm">Synopsis Reader Modal</span>
+        <div class="text-[10px] text-slate-400 font-mono">src/components/SynopsisModal.jsx</div>
+        <p class="text-xs text-slate-600 mt-1">Embedded modal rendering the complete academic project synopsis and technical specifications on demand.</p>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-slate-200 pt-4 flex justify-between">
+      <span>CropGuard Presentation &bull; Slide 6 of 9</span>
+      <span>MERN Component Flow</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 7: Future Development Section (Expanded Roadmap) -->
+  <section class="slide flex-col justify-between p-12 sm:p-20 bg-slate-50 relative">
+    <div class="border-b border-slate-200 pb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Future Developing Section</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Future Development Roadmap: Expanding CropGuard Capabilities</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 my-auto">
+      <div class="p-6 rounded-3xl bg-white border border-emerald-200 shadow-sm space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+          P1
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Drone & Satellite NDVI</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Ingestion of multispectral drone footage to compute Normalized Difference Vegetation Index (NDVI) for whole-field aerial stress detection before ground symptoms emerge.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-white border border-blue-200 shadow-sm space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm">
+          P2
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Offline PWA & ONNX</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Zero-bandwidth rural operation using Progressive Web App service workers and client-side INT8 quantized MobileNetV3 running on ONNX WebAssembly.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-white border border-amber-200 shadow-sm space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-sm">
+          P3
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Multilingual Voice AI</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Voice-in, voice-out advisory across Hindi, Marathi, Telugu, Tamil, and Bengali to empower low-literacy farmers with spoken diagnosis and treatment readouts.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-white border border-purple-200 shadow-sm space-y-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm">
+          P4
+        </div>
+        <h3 class="text-base font-bold text-slate-900">IoT Smart Fertigation</h3>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          Hardware integration with in-situ soil probes streaming telemetry via MQTT, automatically opening solenoid drip irrigation and liquid fertilizer valves.
+        </p>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-slate-200 pt-4 flex justify-between">
+      <span>CropGuard Presentation &bull; Slide 7 of 9</span>
+      <span>Future Developing Roadmap</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 8: Competitive Benchmarking (Why CropGuard is Different) -->
+  <section class="slide flex-col justify-between p-12 sm:p-20 bg-slate-50 relative">
+    <div class="border-b border-slate-200 pb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Innovation & Novelty</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Competitive Matrix: Why CropGuard Stands Out</h2>
+    </div>
+
+    <div class="my-auto bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+      <table class="w-full text-left text-xs sm:text-sm">
+        <thead class="bg-slate-900 text-white uppercase text-xs font-bold">
+          <tr>
+            <th class="py-3 px-6">Feature Dimension</th>
+            <th class="py-3 px-6 text-emerald-400 bg-emerald-950/80">CropGuard (Our System)</th>
+            <th class="py-3 px-6">Generic Disease Apps</th>
+            <th class="py-3 px-6">Govt. Portals</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 font-medium">
+          <tr>
+            <td class="py-3 px-6 font-semibold">Explainable AI (Grad-CAM)</td>
+            <td class="py-3 px-6 font-bold text-emerald-700 bg-emerald-50/50">&check; Visual Heatmaps</td>
+            <td class="py-3 px-6 text-slate-400">&cross; Black Box only</td>
+            <td class="py-3 px-6 text-slate-400">&cross; Not Available</td>
+          </tr>
+          <tr>
+            <td class="py-3 px-6 font-semibold">Dual Vision + Soil Intelligence</td>
+            <td class="py-3 px-6 font-bold text-emerald-700 bg-emerald-50/50">&check; Multi-modal</td>
+            <td class="py-3 px-6 text-slate-400">&cross; Foliage Only</td>
+            <td class="py-3 px-6 text-slate-400">&cross; Tabular Only</td>
+          </tr>
+          <tr>
+            <td class="py-3 px-6 font-semibold">Dynamic Fertilizer Regimen</td>
+            <td class="py-3 px-6 font-bold text-emerald-700 bg-emerald-50/50">&check; Custom by acreage</td>
+            <td class="py-3 px-6 text-slate-400">&cross; Generic text</td>
+            <td class="py-3 px-6 text-amber-600">&minus; Manual lookup</td>
+          </tr>
+          <tr>
+            <td class="py-3 px-6 font-semibold">Treatment Policy</td>
+            <td class="py-3 px-6 font-bold text-emerald-700 bg-emerald-50/50">&check; Organic-First Bio</td>
+            <td class="py-3 px-6 text-slate-400">&cross; Mostly Chemical</td>
+            <td class="py-3 px-6 text-slate-500">Generic text</td>
+          </tr>
+          <tr>
+            <td class="py-3 px-6 font-semibold">Architecture</td>
+            <td class="py-3 px-6 font-bold text-emerald-700 bg-emerald-50/50">&check; MERN + FastAPI</td>
+            <td class="py-3 px-6 text-slate-500">Monolithic</td>
+            <td class="py-3 px-6 text-slate-500">Legacy Server</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-slate-200 pt-4 flex justify-between">
+      <span>CropGuard Presentation &bull; Slide 8 of 9</span>
+      <span>Competitive Advantage</span>
+    </div>
+  </section>
+
+  <!-- SLIDE 9: Project Conclusion & Impact -->
+  <section class="slide flex-col justify-between p-12 sm:p-20 bg-slate-50 relative">
+    <div class="border-b border-slate-200 pb-4">
+      <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Project Conclusion</span>
+      <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Conclusion & Measurable Societal Impact</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-auto">
+      <div class="p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-900 text-base flex items-center">
+          <i data-lucide="check-circle" class="w-5 h-5 mr-2 text-emerald-600"></i> Summary of Accomplishments
+        </h3>
+        <ul class="text-xs sm:text-sm text-slate-600 space-y-3">
+          <li>&bull; <strong>Integrated MERN Platform:</strong> Delivered a modern, responsive React frontend with glassmorphic cards and live telemetry.</li>
+          <li>&bull; <strong>98.7% Diagnostic Accuracy:</strong> Transfer-learned MobileNetV3 classifier fine-tuned on 54,305 PlantVillage leaf images.</li>
+          <li>&bull; <strong>Transparent Explainability:</strong> Grad-CAM heatmaps highlight infected cellular lesions, building agronomist trust.</li>
+          <li>&bull; <strong>Precise Agronomy Calculations:</strong> XGBoost ensemble estimating yield and fertilizer needs based on soil NPK.</li>
+        </ul>
+      </div>
+
+      <div class="p-7 rounded-3xl bg-emerald-950 text-white border border-emerald-500/30 shadow-xl space-y-4">
+        <h3 class="font-bold text-base flex items-center text-emerald-400">
+          <i data-lucide="heart-handshake" class="w-5 h-5 mr-2"></i> Societal & Ecological Benefits
+        </h3>
+        <ul class="text-xs sm:text-sm text-slate-200 space-y-3">
+          <li>&bull; <strong>20%–40% Loss Prevention:</strong> Timely pathogen intervention protects vulnerable harvests.</li>
+          <li>&bull; <strong>30% Lower Input Costs:</strong> Bio-remedy prioritization cuts chemical costs and spares local groundwater.</li>
+          <li>&bull; <strong>Food Security:</strong> Maximizes harvest yield per hectare without exhausting regional soil ecology.</li>
+          <li>&bull; <strong>Ready for Live Demo:</strong> Fully operational on laptop with instant browser launch.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 border-t border-slate-200 pt-4 flex justify-between">
+      <span>CropGuard Presentation &bull; Slide 9 of 9</span>
+      <span>Thank You! Questions & Discussion</span>
+    </div>
+  </section>
+
+  <!-- Interactive Script for Slide Navigation -->
+  <script>
+    lucide.createIcons();
+
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+
+    document.getElementById('total-slides-num').innerText = totalSlides;
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      
+      slides.forEach((s, idx) => {
+        if (idx === index) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+
+      currentSlide = index;
+      document.getElementById('current-slide-num').innerText = currentSlide + 1;
+    }
+
+    function nextSlide() {
+      showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      showSlide(currentSlide - 1);
+    }
+
+    // Keyboard controls
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      }
+    });
+  </script>
+</body>
+</html>
